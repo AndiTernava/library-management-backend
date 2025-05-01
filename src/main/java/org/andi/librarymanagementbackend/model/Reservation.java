@@ -1,7 +1,5 @@
 package org.andi.librarymanagementbackend.model;
 
-
-
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
@@ -24,17 +22,29 @@ public class Reservation {
     private LocalDate dueDate;
     private boolean returned;
 
+    @Enumerated(EnumType.STRING)
+    private ReservationStatus status; // <--- NEW FIELD
+
+    public enum ReservationStatus {
+        PENDING,
+        APPROVED,
+        CANCELLED,
+        REJECTED
+    }
+
     // Constructors
     public Reservation() {}
 
-    public Reservation(Book book, User user, LocalDate loanDate, LocalDate dueDate, boolean returned) {
+    public Reservation(Book book, User user, LocalDate loanDate, LocalDate dueDate, boolean returned, ReservationStatus status) {
         this.book = book;
         this.user = user;
         this.loanDate = loanDate;
         this.dueDate = dueDate;
         this.returned = returned;
+        this.status = status;
     }
 
+    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -82,5 +92,12 @@ public class Reservation {
     public void setReturned(boolean returned) {
         this.returned = returned;
     }
-}
 
+    public ReservationStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ReservationStatus status) {
+        this.status = status;
+    }
+}

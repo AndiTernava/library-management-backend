@@ -21,7 +21,7 @@ CREATE TABLE reservation (
                              user_id BIGINT NOT NULL,
                              loan_date DATE,
                              due_date DATE,
-                             returned BOOLEAN,
+                             returned BOOLEAN
 
                              CONSTRAINT fk_book FOREIGN KEY (book_id) REFERENCES book(id),
                              CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES user(id)

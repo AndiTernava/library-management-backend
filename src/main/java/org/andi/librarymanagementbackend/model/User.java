@@ -1,34 +1,43 @@
 package org.andi.librarymanagementbackend.model;
 
-
 import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
-@Table(name = "user") // Avoid conflict with SQL reserved word "user"
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "user_type")
+@Table(name = "user") // 'user' is a reserved SQL keyword, so this is still fine
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String fullName;
+
+    @Column(nullable = false, unique = true)
     private String email;
+
+    @Column(nullable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Role role;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reservation> reservations;
 
     public enum Role {
-        STUDENT,
-        LIBRARIAN
+        MEMBER,
+        LIBRARIAN,
+        ADMIN
     }
 
     // Constructors
-    public User() {}
+    public User() {
+    }
 
     public User(String fullName, String email, String password, Role role) {
         this.fullName = fullName;
@@ -36,6 +45,8 @@ public class User {
         this.password = password;
         this.role = role;
     }
+
+    // Getters and Setters
 
     public Long getId() {
         return id;
@@ -85,4 +96,3 @@ public class User {
         this.reservations = reservations;
     }
 }
-

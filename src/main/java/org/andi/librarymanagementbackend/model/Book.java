@@ -1,21 +1,44 @@
 package org.andi.librarymanagementbackend.model;
 
-
 import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
+@Table(name = "book")
 public class Book {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String title;
-    private String author;
+
+    @Column(nullable = false, unique = true)
     private String isbn;
-    private String category;
+
+    @Column(nullable = false)
     private int quantity;
+
+    @ManyToOne
+    @JoinColumn(name = "library_branch_id")
+    private LibraryBranch libraryBranch;
+
+    @ManyToOne
+    @JoinColumn(name = "author_id")
+    private Author author;
+
+    @ManyToOne
+    @JoinColumn(name = "shelf_id")
+    private Shelf shelf;
+
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
+
+    @ManyToOne
+    @JoinColumn(name = "publisher_id")
+    private Publisher publisher;
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
     private List<Reservation> reservations;
@@ -23,13 +46,16 @@ public class Book {
     // Constructors
     public Book() {}
 
-    public Book(String title, String author, String isbn, String category, int quantity) {
+    public Book(String title, String isbn, int quantity, Author author, Category category, Publisher publisher) {
         this.title = title;
-        this.author = author;
         this.isbn = isbn;
-        this.category = category;
         this.quantity = quantity;
+        this.author = author;
+        this.category = category;
+        this.publisher = publisher;
     }
+
+    // Getters and Setters
 
     public Long getId() {
         return id;
@@ -39,20 +65,24 @@ public class Book {
         return title;
     }
 
-    public String getAuthor() {
-        return author;
-    }
-
     public String getIsbn() {
         return isbn;
     }
 
-    public String getCategory() {
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public Author getAuthor() {
+        return author;
+    }
+
+    public Category getCategory() {
         return category;
     }
 
-    public int getQuantity() {
-        return quantity;
+    public Publisher getPublisher() {
+        return publisher;
     }
 
     public List<Reservation> getReservations() {
@@ -67,24 +97,27 @@ public class Book {
         this.title = title;
     }
 
-    public void setAuthor(String author) {
-        this.author = author;
-    }
-
     public void setIsbn(String isbn) {
         this.isbn = isbn;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
     }
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
     }
 
+    public void setAuthor(Author author) {
+        this.author = author;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public void setPublisher(Publisher publisher) {
+        this.publisher = publisher;
+    }
+
     public void setReservations(List<Reservation> reservations) {
         this.reservations = reservations;
     }
 }
-
