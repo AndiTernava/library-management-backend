@@ -1,11 +1,16 @@
 package org.andi.librarymanagementbackend.model;
 
 import jakarta.persistence.*;
+import org.andi.librarymanagementbackend.config.TenantEntityListener;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
+
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "membership")
-public class Membership {
+public class Membership extends  TenantBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,6 +41,7 @@ public class Membership {
         this.status = status;
         this.user = user;
     }
+
 
     // Getters and Setters
     public Long getId() {
@@ -77,4 +83,5 @@ public class Membership {
     public void setUser(User user) {
         this.user = user;
     }
+
 }

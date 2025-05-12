@@ -1,11 +1,15 @@
 package org.andi.librarymanagementbackend.model;
 
 import jakarta.persistence.*;
+import org.andi.librarymanagementbackend.config.TenantEntityListener;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 import java.util.List;
 
 @Entity
 @Table(name = "author")
-public class Author {
+public class Author extends  TenantBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -13,6 +17,7 @@ public class Author {
 
     private String name;
     private String biography;
+
 
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL)
     private List<Book> books;
@@ -55,4 +60,6 @@ public class Author {
     public void setBooks(List<Book> books) {
         this.books = books;
     }
+
+
 }

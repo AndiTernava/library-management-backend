@@ -1,8 +1,10 @@
 package org.andi.librarymanagementbackend.model;
 
-import jakarta.persistence.DiscriminatorValue;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import org.andi.librarymanagementbackend.config.TenantEntityListener;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 
 @Entity
 @DiscriminatorValue("MEMBER")
@@ -12,12 +14,14 @@ public class Member extends User {
     private String address;
     private String phoneNumber;
 
+
+
     // Constructors
     public Member() {
         super();
     }
 
-    public Member(String fullName, String email, String password, Role role, String membershipId, String address, String phoneNumber) {
+    public Member(String fullName, String email, String password, Role role,String membershipId, String address, String phoneNumber) {
         super(fullName, email, password, role);
         this.membershipId = membershipId;
         this.address = address;
@@ -48,4 +52,5 @@ public class Member extends User {
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
+
 }

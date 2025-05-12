@@ -1,10 +1,14 @@
 package org.andi.librarymanagementbackend.model;
 
 import jakarta.persistence.*;
+import org.andi.librarymanagementbackend.config.TenantEntityListener;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 
 @Entity
 @Table(name = "inventory")
-public class Inventory {
+public class Inventory  extends  TenantBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -12,6 +16,7 @@ public class Inventory {
 
     @Column(nullable = false)
     private int quantityAvailable;
+
 
     @OneToOne
     @JoinColumn(name = "book_id", nullable = false)
@@ -47,4 +52,5 @@ public class Inventory {
     public void setBook(Book book) {
         this.book = book;
     }
+
 }

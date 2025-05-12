@@ -1,11 +1,16 @@
 package org.andi.librarymanagementbackend.model;
 
 import jakarta.persistence.*;
+import org.andi.librarymanagementbackend.config.TenantEntityListener;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
+
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "event")
-public class Event {
+public class Event extends  TenantBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,4 +44,6 @@ public class Event {
 
     public LocalDate getDate() { return date; }
     public void setDate(LocalDate date) { this.date = date; }
+
+
 }

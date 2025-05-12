@@ -1,10 +1,14 @@
 package org.andi.librarymanagementbackend.model;
 
 import jakarta.persistence.*;
+import org.andi.librarymanagementbackend.config.TenantEntityListener;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 
 @Entity
 @Table(name = "review")
-public class Review {
+public class Review extends  TenantBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -12,7 +16,7 @@ public class Review {
 
     private String comment;
 
-    private int rating; // rating 1-5 stars
+    private int rating;// rating 1-5 stars
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -29,6 +33,7 @@ public class Review {
         this.rating = rating;
         this.user = user;
         this.book = book;
+
     }
 
     public Long getId() {
@@ -70,4 +75,5 @@ public class Review {
     public void setBook(Book book) {
         this.book = book;
     }
+
 }
