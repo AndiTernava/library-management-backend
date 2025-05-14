@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
+public class CategoryDto {
 
     // kjo e bon fushën 'id' vetëm për output, jo për input
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
