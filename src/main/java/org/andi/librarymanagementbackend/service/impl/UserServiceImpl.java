@@ -1,4 +1,4 @@
-package org.andi.librarymanagementbackend.service;
+package org.andi.librarymanagementbackend.service.impl;
 
 import org.andi.librarymanagementbackend.dto.UserDto;
 import org.andi.librarymanagementbackend.mapper.UserMapper;
