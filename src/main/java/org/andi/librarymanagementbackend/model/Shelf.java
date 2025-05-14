@@ -1,11 +1,16 @@
 package org.andi.librarymanagementbackend.model;
 
 import jakarta.persistence.*;
+import org.andi.librarymanagementbackend.config.TenantEntityListener;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
+
 import java.util.List;
 
 @Entity
 @Table(name = "shelf")
-public class Shelf {
+public class Shelf  extends  TenantBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -58,4 +63,5 @@ public class Shelf {
     public void setBooks(List<Book> books) {
         this.books = books;
     }
+
 }

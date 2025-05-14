@@ -1,8 +1,10 @@
 package org.andi.librarymanagementbackend.model;
 
-import jakarta.persistence.DiscriminatorValue;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import org.andi.librarymanagementbackend.config.TenantEntityListener;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 
 @Entity
 @DiscriminatorValue("LIBRARIAN")
@@ -11,12 +13,13 @@ public class Librarian extends User {
     private String employeeNumber;
     private String department;
 
+
     // Constructors
     public Librarian() {
         super();
     }
 
-    public Librarian(String fullName, String email, String password, Role role, String employeeNumber, String department) {
+    public Librarian(String fullName, String email, String password, Role role,String employeeNumber, String department) {
         super(fullName, email, password, role);
         this.employeeNumber = employeeNumber;
         this.department = department;
@@ -38,4 +41,5 @@ public class Librarian extends User {
     public void setDepartment(String department) {
         this.department = department;
     }
+
 }

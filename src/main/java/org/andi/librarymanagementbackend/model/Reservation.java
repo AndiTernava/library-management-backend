@@ -1,10 +1,15 @@
 package org.andi.librarymanagementbackend.model;
 
 import jakarta.persistence.*;
+import org.andi.librarymanagementbackend.config.TenantEntityListener;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
+
 import java.time.LocalDate;
 
 @Entity
-public class Reservation {
+public class Reservation  extends  TenantBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -100,4 +105,5 @@ public class Reservation {
     public void setStatus(ReservationStatus status) {
         this.status = status;
     }
+
 }

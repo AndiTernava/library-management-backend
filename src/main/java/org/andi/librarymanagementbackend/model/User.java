@@ -1,13 +1,17 @@
 package org.andi.librarymanagementbackend.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
+
 import java.util.List;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "user_type")
 @Table(name = "user") // 'user' is a reserved SQL keyword, so this is still fine
-public class User {
+public class User  extends  TenantBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,6 +19,7 @@ public class User {
 
     @Column(nullable = false)
     private String fullName;
+
 
     @Column(nullable = false, unique = true)
     private String email;
@@ -95,4 +100,5 @@ public class User {
     public void setReservations(List<Reservation> reservations) {
         this.reservations = reservations;
     }
+
 }

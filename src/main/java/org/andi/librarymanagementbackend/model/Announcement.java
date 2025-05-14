@@ -1,11 +1,18 @@
 package org.andi.librarymanagementbackend.model;
 
 import jakarta.persistence.*;
+import org.andi.librarymanagementbackend.config.TenantEntityListener;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
+
 import java.time.LocalDateTime;
+
 
 @Entity
 @Table(name = "announcement")
-public class Announcement {
+
+public class Announcement extends  TenantBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,6 +24,7 @@ public class Announcement {
     private String content;
 
     private LocalDateTime publishDate;
+
 
     // Constructors
     public Announcement() {}
@@ -59,4 +67,5 @@ public class Announcement {
     public void setPublishDate(LocalDateTime publishDate) {
         this.publishDate = publishDate;
     }
+
 }

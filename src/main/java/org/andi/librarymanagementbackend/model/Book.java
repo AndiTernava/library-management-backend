@@ -1,11 +1,16 @@
 package org.andi.librarymanagementbackend.model;
 
 import jakarta.persistence.*;
+import org.andi.librarymanagementbackend.config.TenantEntityListener;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
+
 import java.util.List;
 
 @Entity
 @Table(name = "book")
-public class Book {
+public class Book  extends  TenantBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,6 +24,7 @@ public class Book {
 
     @Column(nullable = false)
     private int quantity;
+
 
     @ManyToOne
     @JoinColumn(name = "library_branch_id")
@@ -53,6 +59,7 @@ public class Book {
         this.author = author;
         this.category = category;
         this.publisher = publisher;
+
     }
 
     // Getters and Setters
@@ -120,4 +127,5 @@ public class Book {
     public void setReservations(List<Reservation> reservations) {
         this.reservations = reservations;
     }
+
 }

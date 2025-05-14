@@ -1,12 +1,17 @@
 package org.andi.librarymanagementbackend.model;
 
 import jakarta.persistence.*;
+import org.andi.librarymanagementbackend.config.TenantEntityListener;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "fine")
-public class Fine {
+public class Fine  extends  TenantBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,6 +22,7 @@ public class Fine {
 
     @Column(nullable = false)
     private LocalDate issuedDate;
+
 
     private boolean paid;
 
@@ -48,4 +54,5 @@ public class Fine {
 
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
+
 }
