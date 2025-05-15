@@ -3,6 +3,7 @@ package org.andi.librarymanagementbackend.controller;
 import org.andi.librarymanagementbackend.dto.BookDto;
 import org.andi.librarymanagementbackend.service.BookService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public class BookController {
     }
 
     // GET all books
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ResponseEntity<List<BookDto>> getAllBooks(
             @RequestHeader("X-Tenant-ID") String tenantId
@@ -28,6 +30,7 @@ public class BookController {
     }
 
     // GET book by ID
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}")
     public ResponseEntity<BookDto> getBookById(
             @RequestHeader("X-Tenant-ID") String tenantId,
@@ -37,6 +40,7 @@ public class BookController {
     }
 
     // POST create a new book
+    @PreAuthorize("hasAnyRole('LIBRARIAN','ADMIN')")
     @PostMapping
     public ResponseEntity<BookDto> createBook(
             @RequestHeader("X-Tenant-ID") String tenantId,
@@ -47,6 +51,7 @@ public class BookController {
     }
 
     // PUT update a book
+    @PreAuthorize("hasAnyRole('LIBRARIAN','ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<BookDto> updateBook(
             @RequestHeader("X-Tenant-ID") String tenantId,
@@ -58,6 +63,7 @@ public class BookController {
     }
 
     // DELETE a book
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBook(
             @RequestHeader("X-Tenant-ID") String tenantId,
