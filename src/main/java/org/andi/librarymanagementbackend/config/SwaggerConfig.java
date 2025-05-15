@@ -6,8 +6,6 @@ import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
-import io.swagger.v3.oas.models.security.SecurityScheme.In;
-import io.swagger.v3.oas.models.security.SecurityScheme.Type;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -22,12 +20,26 @@ public class SwaggerConfig {
                         .version("1.0")
                         .contact(new Contact().name("Your Name").email("you@example.com"))
                 )
-                .components(new Components().addSecuritySchemes("X-Tenant-ID",
-                        new SecurityScheme()
-                                .type(Type.APIKEY)
-                                .in(In.HEADER)
-                                .name("X-Tenant-ID")
-                ))
-                .addSecurityItem(new SecurityRequirement().addList("X-Tenant-ID"));
+                .components(new Components()
+                        // API Key për X-Tenant-ID
+                        .addSecuritySchemes("X-Tenant-ID",
+                                new SecurityScheme()
+                                        .type(SecurityScheme.Type.APIKEY)
+                                        .in(SecurityScheme.In.HEADER)
+                                        .name("X-Tenant-ID")
+                        )
+                        // HTTP Bearer për JWT
+                        .addSecuritySchemes("BearerAuth",
+                                new SecurityScheme()
+                                        .type(SecurityScheme.Type.HTTP)
+                                        .scheme("bearer")
+                                        .bearerFormat("JWT")
+                        )
+                )
+                // Aplikoj të dyja globalisht
+                .addSecurityItem(new SecurityRequirement()
+                        .addList("X-Tenant-ID")
+                        .addList("BearerAuth")
+                );
     }
 }
