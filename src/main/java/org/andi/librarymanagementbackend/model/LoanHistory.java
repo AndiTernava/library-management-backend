@@ -1,40 +1,34 @@
+// src/main/java/org/andi/librarymanagementbackend/model/LoanHistory.java
 package org.andi.librarymanagementbackend.model;
 
 import jakarta.persistence.*;
-import org.andi.librarymanagementbackend.config.TenantEntityListener;
-import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.ParamDef;
-
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "loan_history")
-public class LoanHistory extends  TenantBaseEntity {
-
+public class LoanHistory extends TenantBaseEntity {  // if you have a base class for tenantId
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "loan_date", nullable = false)
     private LocalDate loanDate;
+
+    @Column(name = "return_date")
     private LocalDate returnDate;
 
+    @Column(nullable = false)
+    private boolean returned = false;      // ← add this
+
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "book_id")
+    @JoinColumn(name = "book_id", nullable = false)
     private Book book;
 
-    public LoanHistory() {}
-
-    public LoanHistory(LocalDate loanDate, LocalDate returnDate, User user, Book book) {
-        this.loanDate = loanDate;
-        this.returnDate = returnDate;
-        this.user = user;
-        this.book = book;
-    }
+    // getters & setters
 
     public Long getId() {
         return id;
@@ -76,4 +70,13 @@ public class LoanHistory extends  TenantBaseEntity {
         this.book = book;
     }
 
+    // ← add these two
+    public boolean isReturned() {
+        return returned;
+    }
+
+    public void setReturned(boolean returned) {
+        this.returned = returned;
+    }
 }
+
