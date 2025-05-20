@@ -2,6 +2,7 @@ package org.andi.librarymanagementbackend.service.impl;
 
 import org.andi.librarymanagementbackend.dto.UserDto;
 import org.andi.librarymanagementbackend.mapper.UserMapper;
+import org.andi.librarymanagementbackend.model.Admin;
 import org.andi.librarymanagementbackend.model.User;
 import org.andi.librarymanagementbackend.repository.UserRepository;
 import org.andi.librarymanagementbackend.service.UserService;
@@ -49,20 +50,28 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto updateUser(Long id, UserDto userDto) {
-        User existingUser = userRepository.findById(id)
+    public UserDto updateUser(Long id, UserDto dto) {
+        User existing = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        // Map DTO → Entity (but preserve ID)
-        User updatedUser = UserMapper.toEntity(userDto);
-        updatedUser.setId(existingUser.getId());
-        // If the DTO contains a new password, encode it. Otherwise preserve old hash:
-        if (userDto.getPassword() != null && !userDto.getPassword().isEmpty()) {
-            updatedUser.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        } else {
-            updatedUser.setPassword(existingUser.getPassword());
+
+        // Only overwrite the fields that were provided in the DTO:
+        if (dto.getFullName() != null) existing.setFullName(dto.getFullName());
+        if (dto.getEmail()    != null) existing.setEmail(dto.getEmail());
+        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+            existing.setPassword(passwordEncoder.encode(dto.getPassword()));
         }
-        updatedUser = userRepository.save(updatedUser);
-        return UserMapper.toDto(updatedUser);
+        if (dto.getRole() != null) {
+            existing.setRole(dto.getRole());
+        }
+
+        // Handle subtype‐specific extra fields:
+        if (existing instanceof Admin admin && dto.getExtraField1() != null) {
+            admin.setAdminCode(dto.getExtraField1());
+        }
+        // …and similarly for Librarian / Member
+
+        User saved = userRepository.save(existing);
+        return UserMapper.toDto(saved);
     }
 
     @Override
