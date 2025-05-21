@@ -12,6 +12,7 @@ import org.andi.librarymanagementbackend.repository.UserRepository;
 import org.andi.librarymanagementbackend.service.ReservationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -83,16 +84,33 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
+    @Transactional
     public ReservationDetailsDto updateStatus(Long id, String newStatus, String tenantId) {
         Reservation r = resRepo.findByIdAndTenantId(id, tenantId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reservation not found"));
+
         try {
-            r.setStatus(ReservationStatus.valueOf(newStatus.toUpperCase()));
+            ReservationStatus status = ReservationStatus.valueOf(newStatus.toUpperCase());
+            r.setStatus(status);
+
+            // Update book quantity when reservation is approved
+            if (status == ReservationStatus.APPROVED) {
+                Book book = r.getBook();
+                if (book.getQuantity() > 0) {
+                    book.setQuantity(book.getQuantity() - 1);
+                    bookRepo.save(book);
+                } else {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Book is out of stock");
+                }
+            }
+
+            return toDetailsDto(resRepo.save(r));
         } catch (IllegalArgumentException ex) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status: " + newStatus);
         }
-        return toDetailsDto(resRepo.save(r));
     }
+
+
 
     @Override
     public boolean checkAvailability(Long bookId, String tenantId) {
