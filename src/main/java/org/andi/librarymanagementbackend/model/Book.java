@@ -5,9 +5,11 @@ import org.andi.librarymanagementbackend.config.TenantEntityListener;
 import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.ParamDef;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Transactional
 @Entity
 @Table(name = "book")
 public class Book  extends  TenantBaseEntity {
