@@ -13,4 +13,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     /** Lookup one reservation by id *and* tenant */
     Optional<Reservation> findByIdAndTenantId(Long id, String tenantId);
+    List<Reservation> findByTenantId(String tenantId);
+
+    boolean existsByBookIdAndReturnedFalseAndTenantId(Long bookId, String tenantId);
 }
