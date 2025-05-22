@@ -13,6 +13,8 @@ public interface ReservationService {
     List<ReservationDetailsDto> getAll(String tenantId);
     List<ReservationDetailsDto> getByMember(Long memberId, String tenantId);
     ReservationDetailsDto updateStatus(Long id, String newStatus, String tenantId);
-    boolean checkAvailability(Long bookId, String tenantId);
+   /* boolean checkAvailability(Long bookId, String tenantId);*/
+    boolean checkAvailability(Long bookId, Long userId, String tenantId);
+    ReservationDetailsDto confirmPickup(Long id, String tenantId);
 }
 

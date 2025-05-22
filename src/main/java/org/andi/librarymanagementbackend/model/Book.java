@@ -39,7 +39,6 @@ public class Book  extends  TenantBaseEntity {
     @ManyToOne
     @JoinColumn(name = "shelf_id")
     private Shelf shelf;
-
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;

@@ -46,15 +46,29 @@ public class ReservationController {
         }
     }
 
+
     /** Create a reservation (any authenticated user) */
     @PostMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ReservationDto> create(
             @RequestBody ReservationDto dto,
+            @AuthenticationPrincipal CustomUserDetails user,
             @RequestHeader("X-Tenant-ID") String tenantId) {
 
-        return ResponseEntity.ok(resService.create(dto, tenantId));
+        ReservationDto correctedDto = new ReservationDto(
+                dto.id(),
+                dto.bookId(),
+                user.getId(), // 👈 override here
+                dto.loanDate(),
+                dto.dueDate(),
+                dto.returned(),
+                dto.status()
+        );
+
+        return ResponseEntity.ok(resService.create(correctedDto, tenantId));
     }
+
+
 
     /** Cancel a reservation (any authenticated user) */
     @DeleteMapping("/{id}")
@@ -77,13 +91,33 @@ public class ReservationController {
         return ResponseEntity.ok(updated);
     }
 
+    @GetMapping("/check/{bookId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Map<String, Boolean>> check(
+            @PathVariable Long bookId,
+            @AuthenticationPrincipal CustomUserDetails user,
+            @RequestHeader("X-Tenant-ID") String tenantId) {
+
+        boolean available = resService.checkAvailability(bookId, user.getId(), tenantId);
+        return ResponseEntity.ok(Map.of("available", available));
+    }
+
+    @PatchMapping("/{id}/pickup")
+    @PreAuthorize("hasRole('LIBRARIAN')")
+    public ResponseEntity<ReservationDetailsDto> confirmPickup(
+            @PathVariable Long id,
+            @RequestHeader("X-Tenant-ID") String tenantId) {
+
+        ReservationDetailsDto updated = resService.confirmPickup(id, tenantId);
+        return ResponseEntity.ok(updated);
+    }
 
 
 
 
 
     /** Check availability (any authenticated user) */
-    @GetMapping("/check/{bookId}")
+   /* @GetMapping("/check/{bookId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Boolean>> check(
             @PathVariable Long bookId,
@@ -91,6 +125,6 @@ public class ReservationController {
 
         boolean available = resService.checkAvailability(bookId, tenantId);
         return ResponseEntity.ok(Map.of("available", available));
-    }
+    }*/
 }
 
