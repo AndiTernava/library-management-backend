@@ -1,3 +1,4 @@
+// src/main/java/org/andi/librarymanagementbackend/dto/UserDto.java
 package org.andi.librarymanagementbackend.dto;
 
 import org.andi.librarymanagementbackend.model.User;
@@ -8,62 +9,51 @@ public class UserDto {
     private String email;
     private String password;
     private User.Role role;
-    private String extraField1; // department, membershipId, etc.
-    private String extraField2;
 
-    public Long getId() {
-        return id;
-    }
+    // always-present
+    private String address;
+    private String phoneNumber;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    // ADMIN only
+    private String adminCode;
 
-    public String getFullName() {
-        return fullName;
-    }
+    // LIBRARIAN only
+    private String department;
+    private String employeeNumber;
 
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
+    // MEMBER only (output)
+    private String membershipId;
 
-    public String getEmail() {
-        return email;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    public String getFullName() { return fullName; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
 
-    public String getPassword() {
-        return password;
-    }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
 
-    public User.Role getRole() {
-        return role;
-    }
+    public User.Role getRole() { return role; }
+    public void setRole(User.Role role) { this.role = role; }
 
-    public void setRole(User.Role role) {
-        this.role = role;
-    }
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
 
-    public String getExtraField1() {
-        return extraField1;
-    }
+    public String getPhoneNumber() { return phoneNumber; }
+    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
 
-    public void setExtraField1(String extraField1) {
-        this.extraField1 = extraField1;
-    }
+    public String getAdminCode() { return adminCode; }
+    public void setAdminCode(String adminCode) { this.adminCode = adminCode; }
 
-    public String getExtraField2() {
-        return extraField2;
-    }
+    public String getDepartment() { return department; }
+    public void setDepartment(String department) { this.department = department; }
 
-    public void setExtraField2(String extraField2) {
-        this.extraField2 = extraField2;
-    }
+    public String getEmployeeNumber() { return employeeNumber; }
+    public void setEmployeeNumber(String employeeNumber) { this.employeeNumber = employeeNumber; }
+
+    public String getMembershipId() { return membershipId; }
+    public void setMembershipId(String membershipId) { this.membershipId = membershipId; }
 }

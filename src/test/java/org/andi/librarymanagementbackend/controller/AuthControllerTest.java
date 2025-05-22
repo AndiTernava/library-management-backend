@@ -34,7 +34,15 @@ class AuthControllerTest {
 
     @Test
     void shouldRegisterUser() throws Exception {
-        RegisterRequestDto registerDto = new RegisterRequestDto("Gezim", "gezim@example.com", "password123");
+        RegisterRequestDto registerDto =
+                new RegisterRequestDto(
+                        "Gezim",
+                        "gezim@example.com",
+                        "password123",
+                        "123 Main St",       // a dummy address for your test
+                        "555-0123"           // a dummy phone number
+                );
+
         AuthResponseDto responseDto = new AuthResponseDto("token123", 1L, "Gezim", "gezim@example.com", "MEMBER");
 
         when(authService.register(any(RegisterRequestDto.class))).thenReturn(responseDto);

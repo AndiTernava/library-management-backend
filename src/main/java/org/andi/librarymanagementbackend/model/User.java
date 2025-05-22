@@ -1,17 +1,14 @@
+// src/main/java/org/andi/librarymanagementbackend/model/User.java
 package org.andi.librarymanagementbackend.model;
 
 import jakarta.persistence.*;
-import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.ParamDef;
-
 import java.util.List;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "user_type")
-@Table(name = "user") // 'user' is a reserved SQL keyword, so this is still fine
-public class User  extends  TenantBaseEntity {
+@Table(name = "user")
+public class User extends TenantBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,7 +16,6 @@ public class User  extends  TenantBaseEntity {
 
     @Column(nullable = false)
     private String fullName;
-
 
     @Column(nullable = false, unique = true)
     private String email;
@@ -31,6 +27,12 @@ public class User  extends  TenantBaseEntity {
     @Column(nullable = false)
     private Role role;
 
+    @Column(nullable = false)
+    private String address;
+
+    @Column(nullable = false)
+    private String phoneNumber;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reservation> reservations;
 
@@ -40,9 +42,7 @@ public class User  extends  TenantBaseEntity {
         ADMIN
     }
 
-    // Constructors
-    public User() {
-    }
+    public User() {}
 
     public User(String fullName, String email, String password, Role role) {
         this.fullName = fullName;
@@ -51,54 +51,28 @@ public class User  extends  TenantBaseEntity {
         this.role = role;
     }
 
-    // Getters and Setters
+    // getters & setters for id, fullName, email, password, role, address, phoneNumber, reservations...
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public Long getId() {
-        return id;
-    }
+    public String getFullName() { return fullName; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-    public String getFullName() {
-        return fullName;
-    }
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
 
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
+    public Role getRole() { return role; }
+    public void setRole(Role role) { this.role = role; }
 
-    public String getEmail() {
-        return email;
-    }
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    public String getPhoneNumber() { return phoneNumber; }
+    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
-    }
-
-    public List<Reservation> getReservations() {
-        return reservations;
-    }
-
-    public void setReservations(List<Reservation> reservations) {
-        this.reservations = reservations;
-    }
-
+    public List<Reservation> getReservations() { return reservations; }
+    public void setReservations(List<Reservation> reservations) { this.reservations = reservations; }
 }
