@@ -1,4 +1,3 @@
-// src/main/java/org/andi/librarymanagementbackend/controller/LoanController.java
 package org.andi.librarymanagementbackend.controller;
 
 import org.andi.librarymanagementbackend.dto.LoanDto;
@@ -14,13 +13,11 @@ import java.util.List;
 public class LoanController {
 
     private final LoanService loanService;
+
     public LoanController(LoanService loanService) {
         this.loanService = loanService;
     }
 
-    /**
-     * Get active loans for the current user
-     */
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/active")
     public ResponseEntity<List<LoanDto>> activeLoans(
@@ -28,9 +25,6 @@ public class LoanController {
         return ResponseEntity.ok(loanService.getActiveLoans(tenantId));
     }
 
-    /**
-     * Get loan history for the current user
-     */
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/history")
     public ResponseEntity<List<LoanDto>> loanHistory(
@@ -38,16 +32,19 @@ public class LoanController {
         return ResponseEntity.ok(loanService.getLoanHistory(tenantId));
     }
 
-    /**
-     * Return a book
-     */
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('LIBRARIAN')")
     @PutMapping("/{id}/return")
-    public ResponseEntity<Void> returnLoan(
+    public ResponseEntity<LoanDto> returnLoan(
             @PathVariable Long id,
             @RequestHeader("X-Tenant-ID") String tenantId) {
-        loanService.returnLoan(id, tenantId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(loanService.returnLoan(id, tenantId));
+    }
+
+    @PreAuthorize("hasRole('LIBRARIAN')")
+    @PostMapping("/from-reservation/{reservationId}")
+    public ResponseEntity<LoanDto> createLoanFromReservation(
+            @PathVariable Long reservationId,
+            @RequestHeader("X-Tenant-ID") String tenantId) {
+        return ResponseEntity.ok(loanService.createLoanFromReservation(reservationId, tenantId));
     }
 }
-

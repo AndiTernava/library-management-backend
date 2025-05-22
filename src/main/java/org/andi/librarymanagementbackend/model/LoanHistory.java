@@ -1,34 +1,46 @@
-// src/main/java/org/andi/librarymanagementbackend/model/LoanHistory.java
 package org.andi.librarymanagementbackend.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "loan_history")
-public class LoanHistory extends TenantBaseEntity {  // if you have a base class for tenantId
+public class LoanHistory extends TenantBaseEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(name = "loan_date", nullable = false)
-    private LocalDate loanDate;
-
-    @Column(name = "return_date")
-    private LocalDate returnDate;
-
-    @Column(nullable = false)
-    private boolean returned = false;      // ← add this
-
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
 
     @ManyToOne
     @JoinColumn(name = "book_id", nullable = false)
     private Book book;
 
-    // getters & setters
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    private LocalDate loanDate;
+    private LocalDate dueDate;
+    private LocalDate returnDate;
+    private boolean returned;
+
+    @Enumerated(EnumType.STRING)
+    private LoanStatus status;
+
+    @Enumerated(EnumType.STRING)
+    private ReturnStatus returnStatus;
+
+    public enum LoanStatus {
+        ACTIVE,
+        RETURNED
+    }
+
+    public enum ReturnStatus {
+        ON_TIME,
+        LATE,
+        PENDING
+    }
+
+    // ─────────────── Getters and Setters ───────────────
 
     public Long getId() {
         return id;
@@ -36,30 +48,6 @@ public class LoanHistory extends TenantBaseEntity {  // if you have a base class
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public LocalDate getLoanDate() {
-        return loanDate;
-    }
-
-    public void setLoanDate(LocalDate loanDate) {
-        this.loanDate = loanDate;
-    }
-
-    public LocalDate getReturnDate() {
-        return returnDate;
-    }
-
-    public void setReturnDate(LocalDate returnDate) {
-        this.returnDate = returnDate;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
     }
 
     public Book getBook() {
@@ -70,7 +58,38 @@ public class LoanHistory extends TenantBaseEntity {  // if you have a base class
         this.book = book;
     }
 
-    // ← add these two
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public LocalDate getLoanDate() {
+        return loanDate;
+    }
+
+    public void setLoanDate(LocalDate loanDate) {
+        this.loanDate = loanDate;
+    }
+
+    public LocalDate getDueDate() {
+        return dueDate;
+    }
+
+    public void setDueDate(LocalDate dueDate) {
+        this.dueDate = dueDate;
+    }
+
+    public LocalDate getReturnDate() {
+        return returnDate;
+    }
+
+    public void setReturnDate(LocalDate returnDate) {
+        this.returnDate = returnDate;
+    }
+
     public boolean isReturned() {
         return returned;
     }
@@ -78,5 +97,20 @@ public class LoanHistory extends TenantBaseEntity {  // if you have a base class
     public void setReturned(boolean returned) {
         this.returned = returned;
     }
-}
 
+    public LoanStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(LoanStatus status) {
+        this.status = status;
+    }
+
+    public ReturnStatus getReturnStatus() {
+        return returnStatus;
+    }
+
+    public void setReturnStatus(ReturnStatus returnStatus) {
+        this.returnStatus = returnStatus;
+    }
+}

@@ -16,4 +16,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     List<Reservation> findByTenantId(String tenantId);
 
     boolean existsByBookIdAndReturnedFalseAndTenantId(Long bookId, String tenantId);
+    boolean existsByBookIdAndUserIdAndReturnedFalseAndTenantId(Long bookId, Long userId, String tenantId);
+    List<Reservation> findByBookIdAndReturnedFalseAndTenantId(Long bookId, String tenantId);
 }
