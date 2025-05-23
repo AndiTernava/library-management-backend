@@ -7,6 +7,7 @@ import org.andi.librarymanagementbackend.dto.UserDto;
 import org.andi.librarymanagementbackend.mapper.UserMapper;
 import org.andi.librarymanagementbackend.model.*;
 import org.andi.librarymanagementbackend.repository.UserRepository;
+import org.andi.librarymanagementbackend.service.LibraryCardService;
 import org.andi.librarymanagementbackend.service.UserService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -22,14 +23,17 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final LibraryCardService libraryCardService;
 
     @PersistenceContext
     private EntityManager em;
 
     public UserServiceImpl(UserRepository userRepository,
-                           BCryptPasswordEncoder passwordEncoder) {
+                           BCryptPasswordEncoder passwordEncoder,
+                           LibraryCardService libraryCardService) {
         this.userRepository  = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.libraryCardService = libraryCardService;
     }
 
     @Override
@@ -46,7 +50,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
-    @Override
+    /*@Override
     public UserDto createUser(UserDto dto) {
         User user = UserMapper.toEntity(dto);
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
@@ -75,11 +79,48 @@ public class UserServiceImpl implements UserService {
 
         User saved = userRepository.save(user);
         return UserMapper.toDto(saved);
+    }*/
+    @Override
+    public UserDto createUser(UserDto dto) {
+        User user = UserMapper.toEntity(dto);
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+
+        switch (user.getRole()) {
+            case ADMIN -> {
+                Admin a = (Admin) user;
+                if (a.getAdminCode() == null || a.getAdminCode().isBlank()) {
+                    throw new IllegalArgumentException("Admin code is required");
+                }
+            }
+            case LIBRARIAN -> {
+                Librarian l = (Librarian) user;
+                if (l.getDepartment() == null || l.getDepartment().isBlank()) {
+                    throw new IllegalArgumentException("Department is required");
+                }
+                if (l.getEmployeeNumber() == null || l.getEmployeeNumber().isBlank()) {
+                    l.setEmployeeNumber("EMP-" + UUID.randomUUID());
+                }
+            }
+            case MEMBER -> {
+                Member m = (Member) user;
+                m.setMembershipId("MEM-" + UUID.randomUUID());
+            }
+        }
+
+        User saved = userRepository.save(user);
+
+        // Create library card if the user is a member
+        if (saved instanceof Member) {
+            libraryCardService.createCardForUser(saved);
+        }
+
+        return UserMapper.toDto(saved);
     }
+
 
     @Override
     public UserDto updateUser(Long id, UserDto dto) {
-        // 1) load the row (as whatever subtype it currently is)
+        // 1) load the row (as whatever subtype it currently is)h
         User existing = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 

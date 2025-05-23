@@ -1,22 +1,22 @@
+// LibraryCard.java (Updated)
 package org.andi.librarymanagementbackend.model;
 
 import jakarta.persistence.*;
-import org.andi.librarymanagementbackend.config.TenantEntityListener;
-import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.ParamDef;
-
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "library_card")
-public class LibraryCard extends  TenantBaseEntity {
+public class LibraryCard extends TenantBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private LocalDate issuedDate;
+    private LocalDate expiryDate;
+
+    @Enumerated(EnumType.STRING)
+    private LibraryCardStatus status;
 
     @OneToOne
     @JoinColumn(name = "user_id")
@@ -26,6 +26,8 @@ public class LibraryCard extends  TenantBaseEntity {
 
     public LibraryCard(LocalDate issuedDate, User user) {
         this.issuedDate = issuedDate;
+        this.expiryDate = issuedDate.plusYears(1);
+        this.status = LibraryCardStatus.ACTIVE;
         this.user = user;
     }
 
@@ -45,6 +47,22 @@ public class LibraryCard extends  TenantBaseEntity {
         this.issuedDate = issuedDate;
     }
 
+    public LocalDate getExpiryDate() {
+        return expiryDate;
+    }
+
+    public void setExpiryDate(LocalDate expiryDate) {
+        this.expiryDate = expiryDate;
+    }
+
+    public LibraryCardStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(LibraryCardStatus status) {
+        this.status = status;
+    }
+
     public User getUser() {
         return user;
     }
@@ -52,6 +70,4 @@ public class LibraryCard extends  TenantBaseEntity {
     public void setUser(User user) {
         this.user = user;
     }
-
-
 }
