@@ -7,6 +7,7 @@ import org.andi.librarymanagementbackend.dto.UserDto;
 import org.andi.librarymanagementbackend.mapper.UserMapper;
 import org.andi.librarymanagementbackend.model.*;
 import org.andi.librarymanagementbackend.repository.UserRepository;
+import org.andi.librarymanagementbackend.service.LibraryCardService;
 import org.andi.librarymanagementbackend.service.UserService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,8 +24,9 @@ import java.util.stream.Collectors;
 @Transactional
 public class UserServiceImpl implements UserService {
 
-    private final UserRepository           userRepository;
-    private final BCryptPasswordEncoder    passwordEncoder;
+    private final UserRepository userRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
+    private final LibraryCardService libraryCardService;
 
     @PersistenceContext
     private EntityManager em;
@@ -34,11 +36,14 @@ public class UserServiceImpl implements UserService {
      *
      * @param userRepository  the UserRepository
      * @param passwordEncoder the password encoder
+     * @param libraryCardService the library card service
      */
     public UserServiceImpl(UserRepository userRepository,
-                           BCryptPasswordEncoder passwordEncoder) {
-        this.userRepository  = userRepository;
+                           BCryptPasswordEncoder passwordEncoder,
+                           LibraryCardService libraryCardService) {
+        this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.libraryCardService = libraryCardService;
     }
 
     /**
@@ -102,6 +107,12 @@ public class UserServiceImpl implements UserService {
         }
 
         User saved = userRepository.save(user);
+
+        // Create library card if the user is a member
+        if (saved instanceof Member) {
+            libraryCardService.createCardForUser(saved);
+        }
+
         return UserMapper.toDto(saved);
     }
 
