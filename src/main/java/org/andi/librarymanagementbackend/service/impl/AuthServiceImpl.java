@@ -1,3 +1,4 @@
+// src/main/java/org/andi/librarymanagementbackend/service/impl/AuthServiceImpl.java
 package org.andi.librarymanagementbackend.service.impl;
 
 import org.andi.librarymanagementbackend.config.JwtUtil;
@@ -11,9 +12,11 @@ import org.andi.librarymanagementbackend.service.AuthService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
+/**
+ * Service implementation for authentication (register & login).
+ */
 @Service
 public class AuthServiceImpl implements AuthService {
 
@@ -21,40 +24,48 @@ public class AuthServiceImpl implements AuthService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
+    /**
+     * Constructor.
+     *
+     * @param userRepository   the UserRepository
+     * @param passwordEncoder  the password encoder
+     * @param jwtUtil          the JWT utility
+     */
     public AuthServiceImpl(UserRepository userRepository,
                            BCryptPasswordEncoder passwordEncoder,
                            JwtUtil jwtUtil) {
-        this.userRepository = userRepository;
+        this.userRepository  = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.jwtUtil = jwtUtil;
+        this.jwtUtil         = jwtUtil;
     }
 
+    /**
+     * Register a new member user.
+     *
+     * @param req registration details
+     * @return the authentication response DTO
+     * @throws RuntimeException if email already in use
+     */
     @Override
     public AuthResponseDto register(RegisterRequestDto req) {
-        // 1. Prevent duplicate emails
         if (userRepository.existsByEmail(req.getEmail())) {
             throw new RuntimeException("Email already in use");
         }
 
-        // 2. Build Member entity first
         Member m = new Member();
-        m.setFullName(   req.getFullName());
-        m.setEmail(      req.getEmail());
-        m.setPassword(   passwordEncoder.encode(req.getPassword()));
-        m.setRole(       User.Role.MEMBER);
-        m.setAddress(    req.getAddress());
+        m.setFullName(req.getFullName());
+        m.setEmail(req.getEmail());
+        m.setPassword(passwordEncoder.encode(req.getPassword()));
+        m.setRole(User.Role.MEMBER);
+        m.setAddress(req.getAddress());
         m.setPhoneNumber(req.getPhoneNumber());
 
-        // 3. Now generate a simple 5-digit membershipId that starts with '1'
         int idNum = ThreadLocalRandom.current().nextInt(10000, 20000);
-        String membershipId = String.valueOf(idNum);
-        m.setMembershipId(membershipId);
+        m.setMembershipId(String.valueOf(idNum));
 
-        // 4. Persist to database
         User saved = userRepository.save(m);
-
-        // 5. Generate JWT and return response DTO
         String token = jwtUtil.generateToken(saved.getEmail());
+
         return new AuthResponseDto(
                 token,
                 saved.getId(),
@@ -64,18 +75,22 @@ public class AuthServiceImpl implements AuthService {
         );
     }
 
+    /**
+     * Log in an existing user.
+     *
+     * @param req login credentials
+     * @return the authentication response DTO
+     * @throws RuntimeException if credentials are invalid
+     */
     @Override
     public AuthResponseDto login(LoginRequestDto req) {
-        // 1. Lookup user
         User user = userRepository.findByEmail(req.getEmail())
                 .orElseThrow(() -> new RuntimeException("Invalid credentials"));
 
-        // 2. Verify password
         if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
             throw new RuntimeException("Invalid credentials");
         }
 
-        // 3. Generate JWT and return response
         String token = jwtUtil.generateToken(user.getEmail());
         return new AuthResponseDto(
                 token,

@@ -1,3 +1,4 @@
+// src/main/java/org/andi/librarymanagementbackend/service/impl/LoanServiceImpl.java
 package org.andi.librarymanagementbackend.service.impl;
 
 import org.andi.librarymanagementbackend.dto.LoanDto;
@@ -9,6 +10,8 @@ import org.andi.librarymanagementbackend.repository.LoanHistoryRepository;
 import org.andi.librarymanagementbackend.repository.ReservationRepository;
 import org.andi.librarymanagementbackend.service.FineService;
 import org.andi.librarymanagementbackend.service.LoanService;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,14 +21,25 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Service implementation for managing loans.
+ */
 @Service
 public class LoanServiceImpl implements LoanService {
 
-    private final BookRepository         bookRepo;
-    private final LoanHistoryRepository  loanRepo;
-    private final ReservationRepository  reservationRepo;
-    private final FineService            fineService;
+    private final LoanHistoryRepository loanRepo;
+    private final ReservationRepository reservationRepo;
+    private final BookRepository bookRepo;
+    private final FineService fineService;
 
+    /**
+     * Constructor.
+     *
+     * @param loanRepo         the LoanHistoryRepository
+     * @param reservationRepo  the ReservationRepository
+     * @param bookRepo         the BookRepository
+     * @param fineService      the FineService
+     */
     public LoanServiceImpl(LoanHistoryRepository loanRepo,
                            ReservationRepository reservationRepo,
                            BookRepository bookRepo,
@@ -36,7 +50,14 @@ public class LoanServiceImpl implements LoanService {
         this.fineService     = fineService;
     }
 
+    /**
+     * Get all active loans for a tenant.
+     *
+     * @param tenantId the tenant ID
+     * @return list of active loan DTOs
+     */
     @Override
+    @Cacheable(value = "activeLoans", key = "#tenantId")
     public List<LoanDto> getActiveLoans(String tenantId) {
         return loanRepo.findByTenantIdAndReturnedFalse(tenantId)
                 .stream()
@@ -44,7 +65,14 @@ public class LoanServiceImpl implements LoanService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Get loan history for a tenant.
+     *
+     * @param tenantId the tenant ID
+     * @return list of loan history DTOs
+     */
     @Override
+    @Cacheable(value = "loanHistory", key = "#tenantId")
     public List<LoanDto> getLoanHistory(String tenantId) {
         return loanRepo.findByTenantId(tenantId)
                 .stream()
@@ -53,46 +81,52 @@ public class LoanServiceImpl implements LoanService {
     }
 
     /**
-     * Mark a loan as returned. If it's returned after the due date,
-     * set returnStatus to LATE and issue a $10 fine.
+     * Mark a loan as returned. Issues a fine if late, updates book quantity,
+     * and evicts related caches.
+     *
+     * @param loanId   the loan history ID
+     * @param tenantId the tenant ID
+     * @return the updated loan DTO
+     * @throws ResponseStatusException if loan not found
      */
     @Override
     @Transactional
+    @CacheEvict(value = { "activeLoans", "loanHistory" }, key = "#tenantId")
     public LoanDto returnLoan(Long loanId, String tenantId) {
         LoanHistory loan = loanRepo.findByIdAndTenantId(loanId, tenantId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Loan not found: " + loanId));
 
-        // 1) mark returned
         loan.setReturned(true);
         loan.setReturnDate(LocalDate.now());
         loan.setStatus(LoanHistory.LoanStatus.RETURNED);
 
-        // 2) determine on-time vs late
         if (loan.getReturnDate().isAfter(loan.getDueDate())) {
             loan.setReturnStatus(LoanHistory.ReturnStatus.LATE);
-            // 3) issue the $10 fine
             fineService.applyFine(loan.getUser().getId());
         } else {
             loan.setReturnStatus(LoanHistory.ReturnStatus.ON_TIME);
         }
 
-        // 4) increment book quantity
         Book book = loan.getBook();
         book.setQuantity(book.getQuantity() + 1);
         bookRepo.save(book);
 
-        // 5) persist and return DTO
         LoanHistory updated = loanRepo.save(loan);
         return toDto(updated);
     }
 
     /**
-     * Create a new loan record from a reservation. (Quantity was decremented
-     * earlier in your ReservationServiceImpl.confirmPickup(...) method.)
+     * Create a loan based on an approved reservation.
+     *
+     * @param reservationId the reservation ID
+     * @param tenantId      the tenant ID
+     * @return the created loan DTO
+     * @throws ResponseStatusException if reservation not found
      */
     @Override
     @Transactional
+    @CacheEvict(value = { "activeLoans", "loanHistory" }, key = "#tenantId")
     public LoanDto createLoanFromReservation(Long reservationId, String tenantId) {
         Reservation reservation = reservationRepo.findByIdAndTenantId(reservationId, tenantId)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -111,7 +145,12 @@ public class LoanServiceImpl implements LoanService {
         return toDto(loanRepo.save(loan));
     }
 
-    // ─── Helper to map entity → DTO ────────────────────────────────
+    /**
+     * Helper to map LoanHistory to LoanDto.
+     *
+     * @param l the loan history entity
+     * @return the loan DTO
+     */
     private LoanDto toDto(LoanHistory l) {
         return new LoanDto(
                 l.getId(),

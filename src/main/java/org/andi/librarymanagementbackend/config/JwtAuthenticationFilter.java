@@ -1,3 +1,4 @@
+// src/main/java/org/andi/librarymanagementbackend/config/JwtAuthenticationFilter.java
 package org.andi.librarymanagementbackend.config;
 
 import org.andi.librarymanagementbackend.service.impl.UserDetailsServiceImpl;
@@ -9,10 +10,15 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import io.jsonwebtoken.JwtException;
 
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+/**
+ * Filter that validates JWT tokens from the Authorization header and
+ * sets authentication into the security context.
+ */
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
@@ -23,11 +29,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         this.userDetailsService = userDetailsService;
     }
 
+    /**
+     * Filter each request: extract and validate JWT, set authentication.
+     *
+     * @param request  HTTP servlet request
+     * @param response HTTP servlet response
+     * @param chain    filter chain for further processing
+     * @throws IOException      if an I/O error occurs
+     * @throws ServletException if a servlet error occurs
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain chain)
-            throws IOException, jakarta.servlet.ServletException {
+            throws IOException, ServletException {
 
         String header = request.getHeader("Authorization");
         if (StringUtils.hasText(header) && header.startsWith("Bearer ")) {
@@ -42,7 +57,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }
             } catch (JwtException ex) {
-                // token invalid – mund ta log-osh ose t’i refuzosh
                 SecurityContextHolder.clearContext();
             }
         }
