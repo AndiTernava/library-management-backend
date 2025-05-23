@@ -1,3 +1,4 @@
+// src/main/java/org/andi/librarymanagementbackend/service/impl/FineServiceImpl.java
 package org.andi.librarymanagementbackend.service.impl;
 
 import org.andi.librarymanagementbackend.dto.FineDto;
@@ -17,6 +18,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Service implementation for managing fines.
+ */
 @Service
 @Transactional
 public class FineServiceImpl implements FineService {
@@ -25,12 +29,24 @@ public class FineServiceImpl implements FineService {
     private final FineRepository fineRepo;
     private final UserRepository userRepo;
 
+    /**
+     * Constructor.
+     *
+     * @param fineRepo the FineRepository
+     * @param userRepo the UserRepository
+     */
     public FineServiceImpl(FineRepository fineRepo,
                            UserRepository userRepo) {
         this.fineRepo = fineRepo;
         this.userRepo = userRepo;
     }
 
+    /**
+     * Apply a flat fine to a user.
+     *
+     * @param userId the user ID
+     * @return the created fine DTO
+     */
     @Override
     @CacheEvict(value = "unpaidFines", key = "#userId")
     public FineDto applyFine(Long userId) {
@@ -41,6 +57,12 @@ public class FineServiceImpl implements FineService {
         return FineMapper.toDto(fineRepo.save(f));
     }
 
+    /**
+     * Get all unpaid fines for a user.
+     *
+     * @param userId the user ID
+     * @return list of fine DTOs
+     */
     @Override
     @Cacheable(value = "unpaidFines", key = "#userId")
     @Transactional(readOnly = true)
@@ -48,11 +70,17 @@ public class FineServiceImpl implements FineService {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 
-        return fineRepo.findByUserAndPaidFalse(user).stream()
+        return fineRepo.findByUserAndPaidFalse(user)
+                .stream()
                 .map(FineMapper::toDto)
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Mark a fine as paid.
+     *
+     * @param fineId the fine ID
+     */
     @Override
     @CacheEvict(value = "unpaidFines", allEntries = true)
     public void markAsPaid(Long fineId) {

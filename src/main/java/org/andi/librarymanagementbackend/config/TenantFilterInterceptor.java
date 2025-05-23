@@ -1,3 +1,4 @@
+// src/main/java/org/andi/librarymanagementbackend/config/TenantFilterInterceptor.java
 package org.andi.librarymanagementbackend.config;
 
 import jakarta.persistence.EntityManager;
@@ -14,45 +15,54 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Filter to enforce tenant ID presence and apply Hibernate tenant filter.
+ */
 @Component
 public class TenantFilterInterceptor extends OncePerRequestFilter {
 
     @PersistenceContext
     private EntityManager entityManager;
 
-    // Vendos këtu të gjitha path-at që duhen përjashtuar
     private static final List<String> EXCLUDE_URL_PATTERNS = List.of(
-            "/swagger-ui",          // Swagger UI v2/v3
-            "/swagger-ui.html",
-            "/swagger-ui/index.html",
-            "/v3/api-docs",         // OpenAPI JSON
-            "/v3/api-docs/",
-            "/swagger-resources",
-            "/webjars/"
+            "/swagger-ui", "/swagger-ui.html", "/swagger-ui/index.html",
+            "/v3/api-docs", "/v3/api-docs/", "/swagger-resources", "/webjars/"
     );
 
+    /**
+     * Determine if this filter should be skipped for the current request.
+     *
+     * @param request the HTTP servlet request
+     * @return true if the filter should not be applied, false otherwise
+     * @throws ServletException if an error occurs
+     */
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
-        // Nëse path fillon me ndonjërin prej modeleve, mos e aplikoj filter-in
         return EXCLUDE_URL_PATTERNS.stream().anyMatch(path::startsWith);
     }
 
+    /**
+     * Apply tenant context and enable Hibernate filter for tenant isolation.
+     *
+     * @param request     the HTTP servlet request
+     * @param response    the HTTP servlet response
+     * @param filterChain the filter chain
+     * @throws ServletException if a servlet error occurs
+     * @throws IOException      if an I/O error occurs
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
         try {
             String tenantId = request.getHeader("X-Tenant-ID");
-
-            // Kontrollo që tenantId të jetë i pranishëm, vetëm pasi jemi siguruar
-            // që URI nuk është në listën e përjashtimeve
             if (tenantId == null || tenantId.isBlank()) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing X-Tenant-ID header");
                 return;
             }
 
-            // Vendos context dhe aktivizo filter-in Hibernate
             TenantContext.setTenantId(tenantId);
             Session session = entityManager.unwrap(Session.class);
             Filter filter = session.enableFilter("tenantFilter");
@@ -64,4 +74,3 @@ public class TenantFilterInterceptor extends OncePerRequestFilter {
         }
     }
 }
-

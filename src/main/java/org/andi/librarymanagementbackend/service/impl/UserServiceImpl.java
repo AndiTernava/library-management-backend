@@ -16,29 +16,50 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * Service implementation for managing users.
+ */
 @Service
 @Transactional
 public class UserServiceImpl implements UserService {
 
-    private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final UserRepository           userRepository;
+    private final BCryptPasswordEncoder    passwordEncoder;
 
     @PersistenceContext
     private EntityManager em;
 
+    /**
+     * Constructor.
+     *
+     * @param userRepository  the UserRepository
+     * @param passwordEncoder the password encoder
+     */
     public UserServiceImpl(UserRepository userRepository,
                            BCryptPasswordEncoder passwordEncoder) {
         this.userRepository  = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
+    /**
+     * Get all users.
+     *
+     * @return list of user DTOs
+     */
     @Override
     public List<UserDto> getAllUsers() {
-        return userRepository.findAll().stream()
+        return userRepository.findAll()
+                .stream()
                 .map(UserMapper::toDto)
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Get a user by ID.
+     *
+     * @param id the user ID
+     * @return the user DTO
+     */
     @Override
     public UserDto getUserById(Long id) {
         return userRepository.findById(id)
@@ -46,6 +67,13 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
+    /**
+     * Create a new user (Admin, Librarian, or Member).
+     *
+     * @param dto the user DTO
+     * @return the created user DTO
+     * @throws IllegalArgumentException if required fields missing
+     */
     @Override
     public UserDto createUser(UserDto dto) {
         User user = UserMapper.toEntity(dto);
@@ -77,70 +105,60 @@ public class UserServiceImpl implements UserService {
         return UserMapper.toDto(saved);
     }
 
+    /**
+     * Update an existing user. Supports role changes and field patches.
+     *
+     * @param id  the user ID
+     * @param dto the updated user DTO
+     * @return the updated user DTO
+     */
     @Override
     public UserDto updateUser(Long id, UserDto dto) {
-        // 1) load the row (as whatever subtype it currently is)
         User existing = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // 2) if the role is changing, do a bulk‐update to swap discriminator
         if (dto.getRole() != null && dto.getRole() != existing.getRole()) {
-            // flush to push any pending changes first
             em.flush();
-
-            // clear out all old subtype columns & set new role
             userRepository.updateRole(id, dto.getRole().name());
-
-            // now fill in the new‐role fields
             switch (dto.getRole()) {
                 case LIBRARIAN -> {
                     String emp = (dto.getEmployeeNumber() != null && !dto.getEmployeeNumber().isBlank())
                             ? dto.getEmployeeNumber()
                             : "EMP-" + UUID.randomUUID();
-                    userRepository.updateLibrarianFields(id,
-                            dto.getDepartment(), emp);
+                    userRepository.updateLibrarianFields(id, dto.getDepartment(), emp);
                 }
-                case ADMIN -> {
-                    userRepository.updateAdminCode(id,
-                            dto.getAdminCode());
-                }
-                case MEMBER -> {
-                    userRepository.updateMemberFields(id,
-                            "MEM-" + UUID.randomUUID());
-                }
+                case ADMIN -> userRepository.updateAdminCode(id, dto.getAdminCode());
+                case MEMBER -> userRepository.updateMemberFields(id, "MEM-" + UUID.randomUUID());
             }
-
-            // clear the persistence context so the next findById
-            // returns a fresh entity of the correct subclass
             em.flush();
             em.clear();
-
             existing = userRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Role conversion failed"));
         }
 
-        // 3) apply all the always-present fields
-        if (dto.getFullName()    != null) existing.setFullName(dto.getFullName());
-        if (dto.getEmail()       != null) existing.setEmail(dto.getEmail());
+        if (dto.getFullName() != null) existing.setFullName(dto.getFullName());
+        if (dto.getEmail()    != null) existing.setEmail(dto.getEmail());
         if (dto.getPassword() != null && !dto.getPassword().isBlank())
             existing.setPassword(passwordEncoder.encode(dto.getPassword()));
         if (dto.getAddress()     != null) existing.setAddress(dto.getAddress());
         if (dto.getPhoneNumber() != null) existing.setPhoneNumber(dto.getPhoneNumber());
 
-        // 4) patch only the subtype fields on the now-correctly-typed instance
         if (existing instanceof Librarian l) {
             if (dto.getDepartment()     != null) l.setDepartment(dto.getDepartment());
             if (dto.getEmployeeNumber() != null) l.setEmployeeNumber(dto.getEmployeeNumber());
         } else if (existing instanceof Admin a) {
             if (dto.getAdminCode() != null) a.setAdminCode(dto.getAdminCode());
         }
-        // (we never allow manual membershipId edits here)
 
-        // 5) finally save & return
         User saved = userRepository.save(existing);
         return UserMapper.toDto(saved);
     }
 
+    /**
+     * Delete a user by ID.
+     *
+     * @param id the user ID
+     */
     @Override
     public void deleteUser(Long id) {
         userRepository.deleteById(id);

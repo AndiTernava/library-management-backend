@@ -1,3 +1,4 @@
+// src/main/java/org/andi/librarymanagementbackend/service/impl/CategoryServiceImpl.java
 package org.andi.librarymanagementbackend.service.impl;
 
 import org.andi.librarymanagementbackend.dto.CategoryDto;
@@ -12,17 +13,31 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Service implementation for managing categories.
+ */
 @Service
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository repo;
     private final CategoryMapper     mapper;
 
+    /**
+     * Constructor.
+     *
+     * @param repo   the CategoryRepository
+     * @param mapper the CategoryMapper
+     */
     public CategoryServiceImpl(CategoryRepository repo, CategoryMapper mapper) {
         this.repo   = repo;
         this.mapper = mapper;
     }
 
+    /**
+     * Get all categories.
+     *
+     * @return list of category DTOs
+     */
     @Override
     @Cacheable(value = "categories")
     public List<CategoryDto> getAll() {
@@ -32,6 +47,12 @@ public class CategoryServiceImpl implements CategoryService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Get a category by ID.
+     *
+     * @param id the category ID
+     * @return the category DTO
+     */
     @Override
     @Cacheable(value = "category", key = "#id")
     public CategoryDto getById(Long id) {
@@ -40,6 +61,12 @@ public class CategoryServiceImpl implements CategoryService {
         return mapper.toDto(c);
     }
 
+    /**
+     * Create a new category.
+     *
+     * @param dto the category DTO
+     * @return the created category DTO
+     */
     @Override
     @CacheEvict(value = { "categories", "category" }, allEntries = true)
     public CategoryDto create(CategoryDto dto) {
@@ -47,6 +74,13 @@ public class CategoryServiceImpl implements CategoryService {
         return mapper.toDto(repo.save(e));
     }
 
+    /**
+     * Update an existing category.
+     *
+     * @param id  the category ID
+     * @param dto the updated category DTO
+     * @return the updated category DTO
+     */
     @Override
     @CacheEvict(value = { "categories", "category" }, allEntries = true)
     public CategoryDto update(Long id, CategoryDto dto) {
@@ -57,6 +91,11 @@ public class CategoryServiceImpl implements CategoryService {
         return mapper.toDto(repo.save(e));
     }
 
+    /**
+     * Delete a category by ID.
+     *
+     * @param id the category ID
+     */
     @Override
     @CacheEvict(value = { "categories", "category" }, allEntries = true)
     public void delete(Long id) {

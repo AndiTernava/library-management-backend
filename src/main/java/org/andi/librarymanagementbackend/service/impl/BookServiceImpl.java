@@ -1,3 +1,4 @@
+// src/main/java/org/andi/librarymanagementbackend/service/impl/BookServiceImpl.java
 package org.andi.librarymanagementbackend.service.impl;
 
 import org.andi.librarymanagementbackend.dto.BookDto;
@@ -18,14 +19,25 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Service implementation for managing books.
+ */
 @Service
 public class BookServiceImpl implements BookService {
 
-    private final BookRepository       bookRepository;
-    private final AuthorRepository     authorRepository;
-    private final CategoryRepository   categoryRepository;
-    private final PublisherRepository  publisherRepository;
+    private final BookRepository      bookRepository;
+    private final AuthorRepository    authorRepository;
+    private final CategoryRepository  categoryRepository;
+    private final PublisherRepository publisherRepository;
 
+    /**
+     * Constructor.
+     *
+     * @param bookRepository      the BookRepository
+     * @param authorRepository    the AuthorRepository
+     * @param categoryRepository  the CategoryRepository
+     * @param publisherRepository the PublisherRepository
+     */
     public BookServiceImpl(BookRepository bookRepository,
                            AuthorRepository authorRepository,
                            CategoryRepository categoryRepository,
@@ -36,6 +48,12 @@ public class BookServiceImpl implements BookService {
         this.publisherRepository = publisherRepository;
     }
 
+    /**
+     * Create a new book.
+     *
+     * @param bookDto the book DTO
+     * @return the created book DTO
+     */
     @Override
     @CacheEvict(value = "books", allEntries = true)
     public BookDto createBook(BookDto bookDto) {
@@ -47,6 +65,12 @@ public class BookServiceImpl implements BookService {
         return BookMapper.toDto(bookRepository.save(book));
     }
 
+    /**
+     * Get a book by ID.
+     *
+     * @param id the book ID
+     * @return the book DTO
+     */
     @Override
     @Cacheable(value = "book", key = "#id")
     public BookDto getBookById(Long id) {
@@ -55,6 +79,11 @@ public class BookServiceImpl implements BookService {
                 .orElseThrow();
     }
 
+    /**
+     * Get all books.
+     *
+     * @return list of book DTOs
+     */
     @Override
     @Cacheable(value = "books")
     public List<BookDto> getAllBooks() {
@@ -64,6 +93,13 @@ public class BookServiceImpl implements BookService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Update an existing book.
+     *
+     * @param id      the book ID
+     * @param bookDto the updated book DTO
+     * @return the updated book DTO
+     */
     @Override
     @CacheEvict(value = { "books", "book" }, allEntries = true)
     public BookDto updateBook(Long id, BookDto bookDto) {
@@ -79,6 +115,11 @@ public class BookServiceImpl implements BookService {
         return BookMapper.toDto(bookRepository.save(existing));
     }
 
+    /**
+     * Delete a book by ID.
+     *
+     * @param id the book ID
+     */
     @Override
     @CacheEvict(value = { "books", "book" }, allEntries = true)
     public void deleteBook(Long id) {
