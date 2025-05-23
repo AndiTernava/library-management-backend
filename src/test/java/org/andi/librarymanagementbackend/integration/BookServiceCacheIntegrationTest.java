@@ -1,4 +1,4 @@
-package org.andi.librarymanagementbackend.service;
+package org.andi.librarymanagementbackend.integration;
 
 import org.andi.librarymanagementbackend.LibraryManagementBackendApplication;
 import org.andi.librarymanagementbackend.dto.BookDto;
@@ -7,6 +7,7 @@ import org.andi.librarymanagementbackend.model.Book;
 import org.andi.librarymanagementbackend.model.Category;
 import org.andi.librarymanagementbackend.model.Publisher;
 import org.andi.librarymanagementbackend.repository.BookRepository;
+import org.andi.librarymanagementbackend.service.BookService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,4 +1,3 @@
-// src/main/java/org/andi/librarymanagementbackend/config/AppInterceptor.java
 package org.andi.librarymanagementbackend.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;

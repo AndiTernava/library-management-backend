@@ -1,4 +1,4 @@
-package org.andi.librarymanagementbackend.controller;
+package org.andi.librarymanagementbackend.integration;
 
 import org.andi.librarymanagementbackend.config.TenantContext;
 import org.andi.librarymanagementbackend.dto.UserDto;

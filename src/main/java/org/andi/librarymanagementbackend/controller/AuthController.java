@@ -1,4 +1,3 @@
-// src/main/java/org/andi/librarymanagementbackend/controller/AuthController.java
 package org.andi.librarymanagementbackend.controller;
 
 import org.andi.librarymanagementbackend.dto.AuthResponseDto;

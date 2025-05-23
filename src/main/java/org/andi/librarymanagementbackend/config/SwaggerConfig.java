@@ -1,4 +1,3 @@
-// src/main/java/org/andi/librarymanagementbackend/config/SwaggerConfig.java
 package org.andi.librarymanagementbackend.config;
 
 import io.swagger.v3.oas.models.OpenAPI;

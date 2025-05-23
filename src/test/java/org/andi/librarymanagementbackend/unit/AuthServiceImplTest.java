@@ -1,4 +1,4 @@
-package org.andi.librarymanagementbackend.service;
+package org.andi.librarymanagementbackend.unit;
 
 import org.andi.librarymanagementbackend.config.JwtUtil;
 import org.andi.librarymanagementbackend.dto.AuthResponseDto;
@@ -14,7 +14,6 @@ import org.mockito.ArgumentMatchers;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;

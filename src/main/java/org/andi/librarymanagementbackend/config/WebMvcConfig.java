@@ -1,4 +1,3 @@
-// src/main/java/org/andi/librarymanagementbackend/config/WebMvcConfig.java
 package org.andi.librarymanagementbackend.config;
 
 import org.springframework.beans.factory.annotation.Autowired;

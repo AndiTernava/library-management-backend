@@ -1,4 +1,3 @@
-// src/main/java/org/andi/librarymanagementbackend/config/TenantFilterInterceptor.java
 package org.andi.librarymanagementbackend.config;
 
 import jakarta.persistence.EntityManager;
