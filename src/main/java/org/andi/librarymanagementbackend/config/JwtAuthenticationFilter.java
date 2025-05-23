@@ -1,4 +1,3 @@
-// src/main/java/org/andi/librarymanagementbackend/config/JwtAuthenticationFilter.java
 package org.andi.librarymanagementbackend.config;
 
 import org.andi.librarymanagementbackend.service.impl.UserDetailsServiceImpl;

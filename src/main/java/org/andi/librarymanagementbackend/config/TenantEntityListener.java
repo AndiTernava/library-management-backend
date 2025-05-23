@@ -1,4 +1,3 @@
-// src/main/java/org/andi/librarymanagementbackend/config/TenantEntityListener.java
 package org.andi.librarymanagementbackend.config;
 
 import jakarta.persistence.PrePersist;

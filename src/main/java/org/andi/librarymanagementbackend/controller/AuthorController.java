@@ -1,4 +1,3 @@
-// src/main/java/org/andi/librarymanagementbackend/controller/AuthorController.java
 package org.andi.librarymanagementbackend.controller;
 
 import org.andi.librarymanagementbackend.dto.AuthorDto;

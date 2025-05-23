@@ -1,4 +1,3 @@
-// src/main/java/org/andi/librarymanagementbackend/config/AppConfig.java
 package org.andi.librarymanagementbackend.config;
 
 import org.springframework.context.annotation.Bean;

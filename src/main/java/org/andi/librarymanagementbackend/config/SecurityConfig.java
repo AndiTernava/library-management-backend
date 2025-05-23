@@ -1,4 +1,3 @@
-// src/main/java/org/andi/librarymanagementbackend/config/SecurityConfig.java
 package org.andi.librarymanagementbackend.config;
 
 import org.andi.librarymanagementbackend.service.impl.UserDetailsServiceImpl;

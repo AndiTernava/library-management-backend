@@ -1,4 +1,3 @@
-// src/main/java/org/andi/librarymanagementbackend/config/JwtUtil.java
 package org.andi.librarymanagementbackend.config;
 
 import io.jsonwebtoken.*;
