@@ -5,6 +5,8 @@ import org.andi.librarymanagementbackend.mapper.AuthorMapper;
 import org.andi.librarymanagementbackend.model.Author;
 import org.andi.librarymanagementbackend.repository.AuthorRepository;
 import org.andi.librarymanagementbackend.service.AuthorService;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,20 +22,22 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
+    @CacheEvict(value = "authors", allEntries = true)
     public AuthorDto createAuthor(AuthorDto dto) {
-        Author author = AuthorMapper.toEntity(dto);
-        Author saved = authorRepository.save(author);
-        return AuthorMapper.toDto(saved);
+        Author a = AuthorMapper.toEntity(dto);
+        return AuthorMapper.toDto(authorRepository.save(a));
     }
 
     @Override
+    @Cacheable(value = "author", key = "#id")
     public AuthorDto getAuthorById(Long id) {
-        Author author = authorRepository.findById(id)
+        Author a = authorRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Author not found with id: " + id));
-        return AuthorMapper.toDto(author);
+        return AuthorMapper.toDto(a);
     }
 
     @Override
+    @Cacheable(value = "authors")
     public List<AuthorDto> getAllAuthors() {
         return authorRepository.findAll()
                 .stream()
@@ -42,15 +46,16 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
+    @CacheEvict(value = { "authors", "author" }, allEntries = true)
     public AuthorDto updateAuthor(Long id, AuthorDto dto) {
-        Author author = authorRepository.findById(id)
+        Author a = authorRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Author not found with id: " + id));
-        author.setName(dto.getName());
-        Author updated = authorRepository.save(author);
-        return AuthorMapper.toDto(updated);
+        a.setName(dto.getName());
+        return AuthorMapper.toDto(authorRepository.save(a));
     }
 
     @Override
+    @CacheEvict(value = { "authors", "author" }, allEntries = true)
     public void deleteAuthor(Long id) {
         if (!authorRepository.existsById(id)) {
             throw new RuntimeException("Author not found with id: " + id);
