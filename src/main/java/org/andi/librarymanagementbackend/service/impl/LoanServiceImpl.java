@@ -7,11 +7,12 @@ import org.andi.librarymanagementbackend.model.Reservation;
 import org.andi.librarymanagementbackend.repository.BookRepository;
 import org.andi.librarymanagementbackend.repository.LoanHistoryRepository;
 import org.andi.librarymanagementbackend.repository.ReservationRepository;
+import org.andi.librarymanagementbackend.service.FineService;
 import org.andi.librarymanagementbackend.service.LoanService;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -20,14 +21,19 @@ import java.util.stream.Collectors;
 @Service
 public class LoanServiceImpl implements LoanService {
 
-    private final BookRepository bookRepo;
-    private final LoanHistoryRepository loanRepo;
-    private final ReservationRepository reservationRepo;
+    private final BookRepository         bookRepo;
+    private final LoanHistoryRepository  loanRepo;
+    private final ReservationRepository  reservationRepo;
+    private final FineService            fineService;
 
-    public LoanServiceImpl(LoanHistoryRepository loanRepo, ReservationRepository reservationRepo,BookRepository bookRepo) {
-        this.loanRepo = loanRepo;
+    public LoanServiceImpl(LoanHistoryRepository loanRepo,
+                           ReservationRepository reservationRepo,
+                           BookRepository bookRepo,
+                           FineService fineService) {
+        this.loanRepo        = loanRepo;
         this.reservationRepo = reservationRepo;
-        this.bookRepo = bookRepo;
+        this.bookRepo        = bookRepo;
+        this.fineService     = fineService;
     }
 
     @Override
@@ -46,61 +52,51 @@ public class LoanServiceImpl implements LoanService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Mark a loan as returned. If it's returned after the due date,
+     * set returnStatus to LATE and issue a $10 fine.
+     */
     @Override
     @Transactional
     public LoanDto returnLoan(Long loanId, String tenantId) {
         LoanHistory loan = loanRepo.findByIdAndTenantId(loanId, tenantId)
                 .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Loan not found"));
+                        HttpStatus.NOT_FOUND, "Loan not found: " + loanId));
 
+        // 1) mark returned
         loan.setReturned(true);
         loan.setReturnDate(LocalDate.now());
         loan.setStatus(LoanHistory.LoanStatus.RETURNED);
 
-        // Set return status based on return date
+        // 2) determine on-time vs late
         if (loan.getReturnDate().isAfter(loan.getDueDate())) {
             loan.setReturnStatus(LoanHistory.ReturnStatus.LATE);
+            // 3) issue the $10 fine
+            fineService.applyFine(loan.getUser().getId());
         } else {
             loan.setReturnStatus(LoanHistory.ReturnStatus.ON_TIME);
         }
 
-        // Increment book quantity
+        // 4) increment book quantity
         Book book = loan.getBook();
         book.setQuantity(book.getQuantity() + 1);
-        // Save book
-        // (Assuming you have BookRepository injected as bookRepo)
         bookRepo.save(book);
 
-        return toDto(loanRepo.save(loan));
+        // 5) persist and return DTO
+        LoanHistory updated = loanRepo.save(loan);
+        return toDto(updated);
     }
 
-  /*  @Override
-    @Transactional
-    public LoanDto returnLoan(Long loanId, String tenantId) {
-        LoanHistory loan = loanRepo.findByIdAndTenantId(loanId, tenantId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Loan not found"));
-
-        loan.setReturned(true);
-        loan.setReturnDate(LocalDate.now());
-        loan.setStatus(LoanHistory.LoanStatus.RETURNED);
-
-        // Set return status based on return date
-        if (loan.getReturnDate().isAfter(loan.getDueDate())) {
-            loan.setReturnStatus(LoanHistory.ReturnStatus.LATE);
-        } else {
-            loan.setReturnStatus(LoanHistory.ReturnStatus.ON_TIME);
-        }
-
-        return toDto(loanRepo.save(loan));
-    }*/
-
+    /**
+     * Create a new loan record from a reservation. (Quantity was decremented
+     * earlier in your ReservationServiceImpl.confirmPickup(...) method.)
+     */
     @Override
     @Transactional
     public LoanDto createLoanFromReservation(Long reservationId, String tenantId) {
         Reservation reservation = reservationRepo.findByIdAndTenantId(reservationId, tenantId)
                 .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Reservation not found"));
+                        HttpStatus.NOT_FOUND, "Reservation not found: " + reservationId));
 
         LoanHistory loan = new LoanHistory();
         loan.setBook(reservation.getBook());
@@ -115,6 +111,7 @@ public class LoanServiceImpl implements LoanService {
         return toDto(loanRepo.save(loan));
     }
 
+    // ─── Helper to map entity → DTO ────────────────────────────────
     private LoanDto toDto(LoanHistory l) {
         return new LoanDto(
                 l.getId(),
