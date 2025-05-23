@@ -1,4 +1,3 @@
-// src/main/java/org/andi/librarymanagementbackend/service/impl/FineServiceImpl.java
 package org.andi.librarymanagementbackend.service.impl;
 
 import org.andi.librarymanagementbackend.dto.FineDto;
@@ -8,6 +7,8 @@ import org.andi.librarymanagementbackend.model.User;
 import org.andi.librarymanagementbackend.repository.FineRepository;
 import org.andi.librarymanagementbackend.repository.UserRepository;
 import org.andi.librarymanagementbackend.service.FineService;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +32,7 @@ public class FineServiceImpl implements FineService {
     }
 
     @Override
+    @CacheEvict(value = "unpaidFines", key = "#userId")
     public FineDto applyFine(Long userId) {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
@@ -40,6 +42,7 @@ public class FineServiceImpl implements FineService {
     }
 
     @Override
+    @Cacheable(value = "unpaidFines", key = "#userId")
     @Transactional(readOnly = true)
     public List<FineDto> getUnpaidFines(Long userId) {
         User user = userRepo.findById(userId)
@@ -51,6 +54,7 @@ public class FineServiceImpl implements FineService {
     }
 
     @Override
+    @CacheEvict(value = "unpaidFines", allEntries = true)
     public void markAsPaid(Long fineId) {
         Fine f = fineRepo.findById(fineId)
                 .orElseThrow(() -> new IllegalArgumentException("Fine not found: " + fineId));

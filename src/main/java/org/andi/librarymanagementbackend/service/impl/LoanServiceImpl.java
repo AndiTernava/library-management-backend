@@ -9,6 +9,8 @@ import org.andi.librarymanagementbackend.repository.LoanHistoryRepository;
 import org.andi.librarymanagementbackend.repository.ReservationRepository;
 import org.andi.librarymanagementbackend.service.FineService;
 import org.andi.librarymanagementbackend.service.LoanService;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +39,7 @@ public class LoanServiceImpl implements LoanService {
     }
 
     @Override
+    @Cacheable(value = "activeLoans", key = "#tenantId")
     public List<LoanDto> getActiveLoans(String tenantId) {
         return loanRepo.findByTenantIdAndReturnedFalse(tenantId)
                 .stream()
@@ -45,6 +48,7 @@ public class LoanServiceImpl implements LoanService {
     }
 
     @Override
+    @Cacheable(value = "loanHistory", key = "#tenantId")
     public List<LoanDto> getLoanHistory(String tenantId) {
         return loanRepo.findByTenantId(tenantId)
                 .stream()
@@ -53,46 +57,46 @@ public class LoanServiceImpl implements LoanService {
     }
 
     /**
-     * Mark a loan as returned. If it's returned after the due date,
-     * set returnStatus to LATE and issue a $10 fine.
+     * Mark a loan returned. If late, issue $10 fine.
+     * Evict caches for this tenant so the front-end sees updated lists.
      */
     @Override
     @Transactional
+    @CacheEvict(value = { "activeLoans", "loanHistory" }, key = "#tenantId")
     public LoanDto returnLoan(Long loanId, String tenantId) {
         LoanHistory loan = loanRepo.findByIdAndTenantId(loanId, tenantId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Loan not found: " + loanId));
 
-        // 1) mark returned
+        // mark returned
         loan.setReturned(true);
         loan.setReturnDate(LocalDate.now());
         loan.setStatus(LoanHistory.LoanStatus.RETURNED);
 
-        // 2) determine on-time vs late
+        // determine on-time vs late
         if (loan.getReturnDate().isAfter(loan.getDueDate())) {
             loan.setReturnStatus(LoanHistory.ReturnStatus.LATE);
-            // 3) issue the $10 fine
             fineService.applyFine(loan.getUser().getId());
         } else {
             loan.setReturnStatus(LoanHistory.ReturnStatus.ON_TIME);
         }
 
-        // 4) increment book quantity
+        // increment book quantity
         Book book = loan.getBook();
         book.setQuantity(book.getQuantity() + 1);
         bookRepo.save(book);
 
-        // 5) persist and return DTO
+        // persist & return DTO
         LoanHistory updated = loanRepo.save(loan);
         return toDto(updated);
     }
 
     /**
-     * Create a new loan record from a reservation. (Quantity was decremented
-     * earlier in your ReservationServiceImpl.confirmPickup(...) method.)
+     * Create a loan from reservation. Evict activeLoans & loanHistory.
      */
     @Override
     @Transactional
+    @CacheEvict(value = { "activeLoans", "loanHistory" }, key = "#tenantId")
     public LoanDto createLoanFromReservation(Long reservationId, String tenantId) {
         Reservation reservation = reservationRepo.findByIdAndTenantId(reservationId, tenantId)
                 .orElseThrow(() -> new ResponseStatusException(
